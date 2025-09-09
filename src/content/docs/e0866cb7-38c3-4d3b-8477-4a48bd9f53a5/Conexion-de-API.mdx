@@ -1,0 +1,176 @@
+---
+title: "Conexion de API"
+description: ""
+authorId: "OTAFQRc2hecbL5rpirSCESVb6dJIZKEW"
+draft: false
+createdAt: "2025-05-09T01:03:27.886Z"
+updatedAt: "2025-09-09T01:17:04.096Z"
+---
+
+## Conexion a API de SharePoint
+
+
+
+Para continuar es necesario que tengas una cuenta de Azure, donde obtendras las credenciales para el acceso a la api.
+
+
+Las variables de entorno necesarias son las siguientes
+```env
+TENANT_ID=
+CLIENT_ID=
+CLIENT_SECRET_ID=
+ACCESS_TOKEN=
+TENANT_NAME=
+SITE_NAME=
+SITE_ID=
+DRIVE_ID=
+```
+
+Estas se obtendran por medio de una aplicacion a continuacion se mostrara en las imagenes el proceso para asignar estos permisos y obtener estas llaves.
+
+
+Para poder obtener el `ACCESS_TOKEN` es necesario realizar una peticion `POST` a la siguiente api `https://login.microsoftonline.com/<TENANT_ID>/oauth2/v2.0/token` e incluir en los headers los siguientes datos: 
+
+
+| Llave| Valor |
+|--------|--------|
+| grant_type | client_credentials |
+| client_id | <CLIENT_ID> |
+| client_secret | <CLIENT_SECRET> |
+| scope | <https://graph.microsoft.com/.default> |
+
+```json
+{
+    "token_type": "Bearer",
+    "expires_in": 3599,
+    "ext_expires_in": 3599,
+    "access_token": "eyJ..."
+}
+```
+
+Una vez tenemos el `ACCESS_TOKEN` sera necesario realizar una peticion `GET` a la siguiente ruta `https://graph.microsoft.com/v1.0/sites/<TENANT_NAME>.sharepoint.com:/sites/<SITE_NAME>` e incluir en los headers:
+
+
+| Llave| Valor |
+|--------|--------|
+| Authorization | Bearer <ACCESS_TOKEN> |
+
+```json
+{
+    "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites/$entity",
+    "createdDateTime": "2025-05-08T18:29:32.86Z",
+    "description": "SitioPrb Carga Documentos",
+    "id": "<TENANT_NAME>.sharepoint.com,<SITE_ID>",
+    "lastModifiedDateTime": "2025-05-08T21:43:26Z",
+    "name": "PRB_Doctos",
+    "webUrl": "https://<TENANT_NAME>.sharepoint.com/sites/<SITE_NAME>",
+    "displayName": "PRB_Doctos",
+    "root": {},
+    "siteCollection": {
+        "hostname": "geishamx.sharepoint.com"
+    }
+}
+```
+
+Una vez obtenemos el `SITE_ID` podemos obtener la lista de discos en ese site consultando la siguiente ruta `https://graph.microsoft.com/v1.0/sites/<SITE_ID>/drives` e incluyendo el header de autenticacion.
+
+```json
+{
+    "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#drives",
+    "value": [
+        {
+            "createdDateTime": "2025-05-04T05:51:19Z",
+            "description": "",
+            "id": "<DRIVE_ID>",
+            "lastModifiedDateTime": "2025-05-08T18:30:13Z",
+            "name": "Documentos",
+            "webUrl": "https://<TENANT_NAME>.sharepoint.com/sites/<SITE_NAME>/Documentos%20compartidos",
+            "driveType": "documentLibrary",
+            "createdBy": {
+                "user": {
+                    "displayName": "Cuenta del sistema"
+                }
+            },
+            "lastModifiedBy": {
+                "user": {
+                    "email": "test@test.mx",
+                    "id": "c87c32b4...",
+                    "displayName": "Miriam Vizuet"
+                }
+            },
+            "owner": {
+                "group": {
+                    "email": "PRB_Doctos@geishamx.onmicrosoft.com",
+                    "id": "d4434f78...",
+                    "displayName": "Propietarios PRB_Doctos"
+                }
+            },
+            "quota": {
+                "deleted": 0,
+                "remaining": 27487789202836,
+                "state": "normal",
+                "total": 27487790694400,
+                "used": 1491564
+            }
+        }
+    ]
+}
+```
+
+Por ultimo haremos una peticion PUT a la siguiente ruta: `https://graph.microsoft.com/v1.0/drives/<DRIVE_ID>/root:/Upload/testimage.mp4:/content` y asi subiremos un archivo a sharepoint.
+
+```json
+{
+    "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#drives('b%21e2CMj4OjTUaQ81bQxKppfHuWM-IR1eNIgpGLdPfu3ualWuf1tj-iQYPbfPOG0Bep')/root/$entity",
+    "@microsoft.graph.downloadUrl": "https://geishamx.sharepoint.com/sites/PRB_Doctos/_layouts/15/download.aspx?UniqueId=<FILE_ID>&Translate=false&tempauth=v1.<TOKEN>&ApiVersion=2.0",
+    "createdDateTime": "2025-05-19T18:31:28Z",
+    "eTag": "\"{92934196-BF41-4D35-9B56-B53ABE5FE25F},1\"",
+    "id": "014J7OLG4WIGJZEQN7GVGZWVVVHK7F7YS7",
+    "lastModifiedDateTime": "2025-05-19T18:31:28Z",
+    "name": "testimage.png",
+    "webUrl": "https://geishamx.sharepoint.com/sites/PRB_Doctos/Documentos%20compartidos/Upload/testimage.png",
+    "cTag": "\"c:{92934196-BF41-4D35-9B56-B53ABE5FE25F},2\"",
+    "size": 961211,
+    "createdBy": {
+        "application": {
+            "id": "<CLIENT_ID>",
+            "displayName": "App_WebGeisha"
+        },
+        "user": {
+            "displayName": "Aplicación de SharePoint"
+        }
+    },
+    "lastModifiedBy": {
+        "application": {
+            "id": "<CLIENT_ID>",
+            "displayName": "App_WebGeisha"
+        },
+        "user": {
+            "displayName": "Aplicación de SharePoint"
+        }
+    },
+    "parentReference": {
+        "driveType": "documentLibrary",
+        "driveId": "<DRIVE_ID>",
+        "id": "014J7OLGZYGSVAWNTTA5AIHZC6YEO6SNPQ",
+        "name": "Upload",
+        "path": "/drives/<DRIVE_ID>/root:/Upload",
+        "siteId": "<SITE_ID>"
+    },
+    "file": {
+        "mimeType": "image/png",
+        "hashes": {
+            "quickXorHash": "OPYYgrPDAUV+sVd6rWwucd9aA1o="
+        }
+    },
+    "fileSystemInfo": {
+        "createdDateTime": "2025-05-19T18:31:28Z",
+        "lastModifiedDateTime": "2025-05-19T18:31:28Z"
+    },
+    "image": {},
+    "photo": {},
+    "shared": {
+        "scope": "users"
+    }
+}
+```
