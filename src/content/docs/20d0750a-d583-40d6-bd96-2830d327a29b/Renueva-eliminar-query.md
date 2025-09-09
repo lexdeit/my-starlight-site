@@ -1,5 +1,5 @@
 ---
-title: undefined
+title: Renueva eliminar query
 description: NA
 draft: false
 ---
