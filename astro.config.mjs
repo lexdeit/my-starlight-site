@@ -4,6 +4,8 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://lexdeit.github.io/my-starlight-site', // URL de tu GitHub Pages
+	base: '/my-starlight-site/', // nombre del repositorio
 	integrations: [
 		starlight({
 			title: 'My Docs',
