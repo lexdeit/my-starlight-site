@@ -321,7 +321,6 @@ Este query nos retorna todos los agentes asignados a una `Terminal` a partir del
 
 
 
-![Diagrama de ControlOp](../../../../assets/Areas/Servicio/ControlOp/Inicio-Fin-DB.svg)
 
 
 ## Procedimientos
